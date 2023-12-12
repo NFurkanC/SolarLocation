@@ -1,4 +1,4 @@
-# location
+# Two Dimensional Solar Location App
 
 A new Flutter project.
 
