@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'dart:typed_data';
+import 'dart:async';
 
 void main() {
   return runApp(GaugeApp());
@@ -29,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  double long1 = 0.0;
   Widget _getGauge({bool isRadialGauge = true}) {
     if (isRadialGauge) {
       return _getRadialGauge();
@@ -43,8 +45,8 @@ class _MyHomePageState extends State<MyHomePage> {
             text: 'Güneş Konumu',
             textStyle:
                 const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-        enableLoadingAnimation: true,
-        animationDuration: 4500,
+        //enableLoadingAnimation: true,
+        //animationDuration: 4500,
         axes: <RadialAxis>[
           RadialAxis(
               minimum: 0,
@@ -79,11 +81,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
               pointers: <GaugePointer>[
                 MarkerPointer(
-                  value: 70,
+                  value: long1,
                   markerType: MarkerType.circle,
                   markerHeight: 40,
                   markerWidth: 40,
-                  markerOffset: 350,
+                  //markerOffset: 350,
                   color: Colors.amber,
                 )
               ],
@@ -142,7 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
     List<String> availablePort = SerialPort.availablePorts;
     //List available ports.
     print('Available Ports: $availablePort');
-
+    Timer(Duration(seconds: 3), () {
+      print("Yeah, this line is printed after 3 seconds");
+    });
     SerialPort port1 = SerialPort('COM4');
     port1.openReadWrite();
 
@@ -151,13 +155,17 @@ class _MyHomePageState extends State<MyHomePage> {
       /*print(
           "Written Bytes: ${port1.write(_stringToUint8List('Hello World!'))}");*/
       //Read data from serial port.
-      SerialPortReader reader = SerialPortReader(port1);
-      /*Stream<String> upcomingData = reader.stream.map((data) {
-        return String.fromCharCodes(data);
-      });*/
 
-      reader.stream.listen((data) {
-        print('Received: $data');
+      SerialPortReader reader = SerialPortReader(port1);
+      Stream<String> upcomingData = reader.stream.map((data) {
+        return String.fromCharCodes(data);
+      });
+
+      upcomingData.listen((adata) {
+        setState(() {
+          long1 = double.parse('$adata');
+        });
+        print('Received: $adata');
       });
       //Close the serial port.
     } on SerialPortError catch (err, _) {
@@ -166,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return Scaffold(
         appBar: AppBar(title: const Text('Güneş Konumlandırma Sistemi')),
-        body: _getGauge());
+        body: _getRadialGauge());
   }
 }
 
